@@ -1,0 +1,69 @@
+#include <stdio.h>
+
+#define MAX_FRAMES 3
+
+int findOptimal(int pages[], int frames[], int start, int n) {
+    int index = -1, farthest = start;
+    for (int i = 0; i < MAX_FRAMES; i++) {
+        int j;
+        for (j = start; j < n; j++) {
+            if (frames[i] == pages[j]) {
+                if (j > farthest) {
+                    farthest = j;
+                    index = i;
+                }
+                break;
+            }
+        }
+        if (j == n)
+            return i; // Page not found in future, return this index
+    }
+    return (index == -1) ? 0 : index;
+}
+
+void optimalPageReplacement(int pages[], int n) {
+    int frames[MAX_FRAMES], frameCount = 0, pageFaults = 0;
+
+    for (int i = 0; i < n; i++) {
+        int page = pages[i];
+        int isPageInFrame = 0;
+
+        // Check if the page is already in a frame
+        for (int j = 0; j < frameCount; j++) {
+            if (frames[j] == page) {
+                isPageInFrame = 1;
+                break;
+            }
+        }
+
+        if (!isPageInFrame) {
+            if (frameCount < MAX_FRAMES) {
+                // If there is space in frames, add the page
+                frames[frameCount++] = page;
+            } else {
+                // If frames are full, replace the page using Optimal algorithm
+                int replaceIndex = findOptimal(pages, frames, i + 1, n);
+                frames[replaceIndex] = page;
+            }
+            pageFaults++;
+        }
+
+        // Print the current state of frames
+        printf("Page %d: ", page);
+        for (int j = 0; j < frameCount; j++) {
+            printf("%d ", frames[j]);
+        }
+        printf("\n");
+    }
+
+    printf("Total Page Faults: %d\n", pageFaults);
+}
+
+int main() {
+    int pages[] = {7, 0, 1, 2, 0, 3, 0, 4, 2, 3, 0, 3, 2, 1, 2, 0, 1, 7, 0, 1};
+    int n = sizeof(pages) / sizeof(pages[0]);
+
+    optimalPageReplacement(pages, n);
+
+    return 0;
+}
