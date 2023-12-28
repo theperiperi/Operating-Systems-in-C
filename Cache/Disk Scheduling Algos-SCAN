@@ -1,0 +1,78 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+void scan(int head, int requests[], int n, int direction) {
+    int totalSeekTime = 0;
+    int visited[n];
+
+    for (int i = 0; i < n; i++) {
+        visited[i] = 0;
+    }
+
+    // Sort the requests in ascending order
+    for (int i = 0; i < n - 1; i++) {
+        for (int j = 0; j < n - i - 1; j++) {
+            if (requests[j] > requests[j + 1]) {
+                int temp = requests[j];
+                requests[j] = requests[j + 1];
+                requests[j + 1] = temp;
+            }
+        }
+    }
+
+    int index = 0;
+    for (int i = 0; i < n; i++) {
+        if (requests[i] >= head) {
+            index = i;
+            break;
+        }
+    }
+
+    for (int i = index; i < n; i++) {
+        totalSeekTime += abs(head - requests[i]);
+        head = requests[i];
+        visited[i] = 1;
+    }
+
+    if (direction == 1) {
+        for (int i = index - 1; i >= 0; i--) {
+            if (!visited[i]) {
+                totalSeekTime += abs(head - requests[i]);
+                head = requests[i];
+            }
+        }
+    } else {
+        for (int i = index; i >= 0; i--) {
+            if (!visited[i]) {
+                totalSeekTime += abs(head - requests[i]);
+                head = requests[i];
+            }
+        }
+    }
+
+    printf("Total Seek Time using SCAN: %d\n", totalSeekTime);
+}
+
+int main() {
+    int head, n, direction;
+
+    printf("Enter the current position of the disk head: ");
+    scanf("%d", &head);
+
+    printf("Enter the number of requests: ");
+    scanf("%d", &n);
+
+    int requests[n];
+
+    printf("Enter the disk requests: ");
+    for (int i = 0; i < n; i++) {
+        scanf("%d", &requests[i]);
+    }
+
+    printf("Enter the direction (1 for right, 0 for left): ");
+    scanf("%d", &direction);
+
+    scan(head, requests, n, direction);
+
+    return 0;
+}
