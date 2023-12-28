@@ -1,0 +1,52 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+void sstf(int head, int requests[], int n) {
+    int totalSeekTime = 0;
+    int visited[n];
+
+    for (int i = 0; i < n; i++) {
+        visited[i] = 0;
+    }
+
+    for (int i = 0; i < n; i++) {
+        int minDistance = 999999, minIndex;
+
+        for (int j = 0; j < n; j++) {
+            if (!visited[j]) {
+                int distance = abs(head - requests[j]);
+                if (distance < minDistance) {
+                    minDistance = distance;
+                    minIndex = j;
+                }
+            }
+        }
+
+        visited[minIndex] = 1;
+        totalSeekTime += minDistance;
+        head = requests[minIndex];
+    }
+
+    printf("Total Seek Time using SSTF: %d\n", totalSeekTime);
+}
+
+int main() {
+    int head, n;
+
+    printf("Enter the current position of the disk head: ");
+    scanf("%d", &head);
+
+    printf("Enter the number of requests: ");
+    scanf("%d", &n);
+
+    int requests[n];
+
+    printf("Enter the disk requests: ");
+    for (int i = 0; i < n; i++) {
+        scanf("%d", &requests[i]);
+    }
+
+    sstf(head, requests, n);
+
+    return 0;
+}
