@@ -1,0 +1,49 @@
+#include <stdio.h>
+
+#define MAX_FRAMES 3
+
+void fifo(int pages[], int n) {
+    int frames[MAX_FRAMES], frameCount = 0, pageFaults = 0;
+
+    for (int i = 0; i < n; i++) {
+        int page = pages[i];
+        int isPageInFrame = 0;
+
+        // Check if the page is already in a frame
+        for (int j = 0; j < frameCount; j++) {
+            if (frames[j] == page) {
+                isPageInFrame = 1;
+                break;
+            }
+        }
+
+        if (!isPageInFrame) {
+            if (frameCount < MAX_FRAMES) {
+                // If there is space in frames, add the page
+                frames[frameCount++] = page;
+            } else {
+                // If frames are full, replace the oldest page (FIFO)
+                frames[0] = page;
+            }
+            pageFaults++;
+        }
+
+        // Print the current state of frames
+        printf("Page %d: ", page);
+        for (int j = 0; j < frameCount; j++) {
+            printf("%d ", frames[j]);
+        }
+        printf("\n");
+    }
+
+    printf("Total Page Faults: %d\n", pageFaults);
+}
+
+int main() {
+    int pages[] = {2, 3, 2, 1, 5, 2, 4, 5, 3, 2, 5};
+    int n = sizeof(pages) / sizeof(pages[0]);
+
+    fifo(pages, n);
+
+    return 0;
+}
