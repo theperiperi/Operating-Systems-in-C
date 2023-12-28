@@ -1,0 +1,81 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <pthread.h>
+
+#define BUFFER_SIZE 10
+
+typedef struct {
+    int buffer[BUFFER_SIZE];
+    int index;
+    pthread_mutex_t mutex;
+    pthread_cond_t cond_producer;
+    pthread_cond_t cond_consumer;
+} SharedData;
+
+SharedData shared_data = {
+    .index = 0,
+    .mutex = PTHREAD_MUTEX_INITIALIZER,
+    .cond_producer = PTHREAD_COND_INITIALIZER,
+    .cond_consumer = PTHREAD_COND_INITIALIZER
+};
+
+void *producer(void *arg);
+void *consumer(void *arg);
+
+int main() {
+    pthread_t producer_thread, consumer_thread;
+
+    // Create producer and consumer threads
+    pthread_create(&producer_thread, NULL, producer, NULL);
+    pthread_create(&consumer_thread, NULL, consumer, NULL);
+
+    // Wait for threads to finish
+    pthread_join(producer_thread, NULL);
+    pthread_join(consumer_thread, NULL);
+
+    return 0;
+}
+
+void *producer(void *arg) {
+    for (int i = 0; i < 20; ++i) {
+        pthread_mutex_lock(&shared_data.mutex);
+
+        // Wait if the buffer is full
+        while (shared_data.index == BUFFER_SIZE) {
+            pthread_cond_wait(&shared_data.cond_producer, &shared_data.mutex);
+        }
+
+        // Produce an item and add it to the buffer
+        shared_data.buffer[shared_data.index++] = i;
+        printf("Produced: %d\n", i);
+
+        // Signal the consumer that a new item is available
+        pthread_cond_signal(&shared_data.cond_consumer);
+
+        pthread_mutex_unlock(&shared_data.mutex);
+    }
+
+    pthread_exit(NULL);
+}
+
+void *consumer(void *arg) {
+    for (int i = 0; i < 20; ++i) {
+        pthread_mutex_lock(&shared_data.mutex);
+
+        // Wait if the buffer is empty
+        while (shared_data.index == 0) {
+            pthread_cond_wait(&shared_data.cond_consumer, &shared_data.mutex);
+        }
+
+        // Consume an item from the buffer
+        int item = shared_data.buffer[--shared_data.index];
+        printf("Consumed: %d\n", item);
+
+        // Signal the producer that a space is available in the buffer
+        pthread_cond_signal(&shared_data.cond_producer);
+
+        pthread_mutex_unlock(&shared_data.mutex);
+    }
+
+    pthread_exit(NULL);
+}
