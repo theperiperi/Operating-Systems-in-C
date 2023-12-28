@@ -1,0 +1,69 @@
+#include <stdio.h>
+
+#define MAX_FRAMES 3
+
+void lru(int pages[], int n) {
+    int frames[MAX_FRAMES], frameCount = 0, pageFaults = 0;
+    int recentlyUsed[MAX_FRAMES];
+
+    for (int i = 0; i < MAX_FRAMES; i++) {
+        frames[i] = -1; // Initialize frames with -1
+        recentlyUsed[i] = 0; // Initialize recentlyUsed array
+    }
+
+    for (int i = 0; i < n; i++) {
+        int page = pages[i];
+        int isPageInFrame = 0;
+
+        // Check if the page is already in a frame
+        for (int j = 0; j < frameCount; j++) {
+            if (frames[j] == page) {
+                isPageInFrame = 1;
+                recentlyUsed[j] = 1; // Update recentlyUsed for the page
+                break;
+            }
+        }
+
+        if (!isPageInFrame) {
+            if (frameCount < MAX_FRAMES) {
+                // If there is space in frames, add the page
+                frames[frameCount++] = page;
+            } else {
+                // If frames are full, replace the least recently used page (LRU)
+                int replaceIndex = 0;
+                for (int j = 1; j < MAX_FRAMES; j++) {
+                    if (recentlyUsed[j] < recentlyUsed[replaceIndex]) {
+                        replaceIndex = j;
+                    }
+                }
+                frames[replaceIndex] = page;
+            }
+            pageFaults++;
+        }
+
+        // Update recentlyUsed for all frames
+        for (int j = 0; j < frameCount; j++) {
+            if (frames[j] != -1) {
+                recentlyUsed[j]++;
+            }
+        }
+
+        // Print the current state of frames
+        printf("Page %d: ", page);
+        for (int j = 0; j < frameCount; j++) {
+            printf("%d ", frames[j]);
+        }
+        printf("\n");
+    }
+
+    printf("Total Page Faults: %d\n", pageFaults);
+}
+
+int main() {
+    int pages[] = {7, 0, 1, 2, 0, 3, 0, 4, 2, 3, 0, 3, 2, 1, 2, 0, 1, 7, 0, 1};
+    int n = sizeof(pages) / sizeof(pages[0]);
+
+    lru(pages, n);
+
+    return 0;
+}
