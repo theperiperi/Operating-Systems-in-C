@@ -1,0 +1,76 @@
+#include <stdio.h>
+
+// Process structure
+struct Process {
+    int process_id;
+    int burst_time;
+    int remaining_time;
+};
+
+// Function to perform Round Robin scheduling
+void roundRobin(struct Process processes[], int n, int quantum) {
+    int i, currentTime = 0;
+
+    // Array to keep track of turnaround time for each process
+    int turnaroundTime[n];
+
+    // Initialize remaining time for all processes
+    for (i = 0; i < n; i++) {
+        processes[i].remaining_time = processes[i].burst_time;
+        turnaroundTime[i] = 0;
+    }
+
+    // Perform Round Robin scheduling
+    while (1) {
+        int allProcessesComplete = 1;
+
+        for (i = 0; i < n; i++) {
+            if (processes[i].remaining_time > 0) {
+                allProcessesComplete = 0;
+
+                if (processes[i].remaining_time > quantum) {
+                    currentTime += quantum;
+                    processes[i].remaining_time -= quantum;
+                } else {
+                    currentTime += processes[i].remaining_time;
+                    turnaroundTime[i] = currentTime;
+                    processes[i].remaining_time = 0;
+                }
+            }
+        }
+
+        if (allProcessesComplete)
+            break;
+    }
+
+    // Print turnaround time for each process
+    printf("\nTurnaround Time for each process:\n");
+    for (i = 0; i < n; i++) {
+        printf("Process %d: %d\n", processes[i].process_id, turnaroundTime[i]);
+    }
+}
+
+int main() {
+    int n, quantum;
+
+    printf("Enter the number of processes: ");
+    scanf("%d", &n);
+
+    struct Process processes[n];
+
+    // Input burst time for each process
+    for (int i = 0; i < n; i++) {
+        processes[i].process_id = i + 1;
+        printf("Enter burst time for process %d: ", i + 1);
+        scanf("%d", &processes[i].burst_time);
+    }
+
+    // Input time quantum
+    printf("Enter time quantum: ");
+    scanf("%d", &quantum);
+
+    // Perform Round Robin scheduling
+    roundRobin(processes, n, quantum);
+
+    return 0;
+}
